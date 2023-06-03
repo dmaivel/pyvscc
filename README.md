@@ -31,7 +31,8 @@ Currently, this compiler is able to compile and execute the following example ef
 ```python
 def main():
 	x = 10
-	print('hello world!\n')
+    if x != 11:
+	    print('hello world!\n')
 	return x
 ```
 As for more "complex" demoes, many more features must first be implemented.
