@@ -110,6 +110,7 @@ int main(int argc, char **argv)
         .labelc = 0,
 
         .current_function = NULL,
+        .return_reg = NULL,
         .default_size = program_args.default_size,
 
         .memcpy_queue = NULL

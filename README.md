@@ -29,8 +29,11 @@ options:
 ### demo
 Currently, this compiler is able to compile and execute the following example effortlessly (tabs must be U+0009):
 ```python
+def play():
+	return 10
+
 def main():
-	x = 10
+	x = play()
 	if x != 11:
 		print('hello world!\n')
 	return x

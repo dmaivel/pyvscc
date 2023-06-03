@@ -23,6 +23,7 @@ struct pybuild_context {
     int labelc;
 
     struct vscc_function *current_function;
+    struct vscc_register *return_reg;
     size_t default_size;
 
     struct pybuild_memcpy *memcpy_queue;
