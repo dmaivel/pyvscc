@@ -170,7 +170,7 @@ static void parse_call(struct pybuild_context *ctx, struct lexer_token *start_to
         token = token->next;
     }
 
-    _vscc_call(ctx->current_function, callee, vscc_alloc(ctx->current_function, generate_name_for_local_global(ctx->current_function, NULL), ctx->default_size, false, true));
+    _vscc_call(ctx->current_function, callee, ctx->return_reg ? ctx->return_reg : vscc_alloc(ctx->current_function, generate_name_for_local_global(ctx->current_function, NULL), ctx->default_size, false, true));
 }
 
 static void parse_assignment(struct pybuild_context *ctx, struct lexer_token *start_token, struct lexer_token *end_token, bool *status)
@@ -181,8 +181,15 @@ static void parse_assignment(struct pybuild_context *ctx, struct lexer_token *st
     case TOKEN_EQUAL:
         if (next(next(start_token))->type == TOKEN_LITERAL)
             vscc_push0(ctx->current_function, O_STORE, dst, atoi(next(next(start_token))->contents));
-        else
-            vscc_push1(ctx->current_function, O_STORE, dst, get_variable(ctx, start_token->contents));
+        else if (next(next(start_token))->type == TOKEN_IDENTIFIER) {
+            if (next(next(next(start_token)))->type == TOKEN_OPEN_PAREN) {
+                ctx->return_reg = dst;
+                parse_call(ctx, next(next(start_token)), end_token, status);
+                ctx->return_reg = NULL;
+            }
+            else
+                vscc_push1(ctx->current_function, O_STORE, dst, get_variable(ctx, start_token->contents));
+        }
         break;
     default:
         fail_if(true, "err: unexpected assignment\n");
@@ -285,6 +292,9 @@ bool parse(struct pybuild_context *ctx, struct lexer_token *lex_tokens)
         if (start_token->type == TOKEN_COMMENT)
             continue;
 
+        if (tabs_found == 0 && def)
+            def = false;
+
         /*
          * figure out tab information
          */
@@ -293,18 +303,11 @@ bool parse(struct pybuild_context *ctx, struct lexer_token *lex_tokens)
             vscc_push2(ctx->current_function, O_DECLABEL, ctx->current_label++);
         }
 
-        if (tabs_found == 0 && def)
-            def = false;
-
         /*
          * start parsing 
          */
         switch (start_token->type) {
         case TOKEN_DEF:
-            if (ctx->labelc != 0) {
-                ctx->labelc--;
-                vscc_push2(ctx->current_function, O_DECLABEL, ctx->current_label++);
-            }
             def = true;
             parse_definition(ctx, start_token, stop_token, &status);
             break;
