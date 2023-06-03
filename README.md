@@ -27,12 +27,12 @@ options:
 
 ## features
 ### demo
-Currently, this compiler is able to compile and execute the following example effortlessly:
+Currently, this compiler is able to compile and execute the following example effortlessly (tabs must be U+0009):
 ```python
 def main():
 	x = 10
-    if x != 11:
-	    print('hello world!\n')
+	if x != 11:
+		print('hello world!\n')
 	return x
 ```
 As for more "complex" demoes, many more features must first be implemented.
