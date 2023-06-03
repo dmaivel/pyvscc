@@ -318,7 +318,7 @@ bool parse(struct pybuild_context *ctx, struct lexer_token *lex_tokens)
             parse_if(ctx, start_token, stop_token, &status);
             break;
         default:
-            // to-do: fail?
+            /* to-do: fail? */
             break;
         }
     }
@@ -327,7 +327,6 @@ bool parse(struct pybuild_context *ctx, struct lexer_token *lex_tokens)
         ctx->labelc--;
         vscc_push2(ctx->current_function, O_DECLABEL, ctx->current_label++);
     }
-
 
     return status;
 }
