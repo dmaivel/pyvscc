@@ -1,0 +1,3 @@
+[submodule "vscc"]
+	path = vscc
+	url = https://github.com/dmaivel/vscc.git
