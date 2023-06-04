@@ -1,11 +1,6 @@
 #include "pyimpl.h"
 #include <string.h>
 
-static inline void add_pyimpl_stub(struct vscc_context *ctx)
-{
-    vscc_init_function(ctx, "pyimpl_stub", 0);
-}
-
 static inline void add_pyimpl_strlen(struct vscc_context *ctx)
 {
     struct vscc_function *strlen = vscc_init_function(ctx, "pyimpl_strlen", SIZEOF_I64);
@@ -51,7 +46,6 @@ void pyimpl_append_to_context(struct vscc_context *ctx)
 {
     vscc_alloc_global(ctx, "__name__", 16, false);
 
-    add_pyimpl_stub(ctx);
     add_pyimpl_strlen(ctx);
     add_pyimpl_print_str(ctx);
 }
