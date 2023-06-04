@@ -1,5 +1,6 @@
 #include "lexer.h"
-#include "vscc.h"
+#include <vscc.h>
+
 #include <ctype.h>
 #include <stdlib.h>
 #include <string.h>

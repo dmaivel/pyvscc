@@ -2,8 +2,6 @@
 #define _PARSER_H_
 
 #include <vscc.h>
-#include "asm/assembler.h"
-#include "ir/intermediate.h"
 #include "lexer.h"
 
 struct pybuild_memcpy {

@@ -1,9 +1,8 @@
 #include "pybuild.h"
-#include "asm/assembler.h"
-#include "ir/intermediate.h"
 #include "lexer.h"
 #include "pyimpl.h"
-#include "util/list.h"
+
+#include <util/list.h>
 #include <assert.h>
 #include <stdio.h>
 #include <string.h>
@@ -309,6 +308,7 @@ bool parse(struct pybuild_context *ctx, struct lexer_token *lex_tokens)
         switch (start_token->type) {
         case TOKEN_DEF:
             def = true;
+            ctx->current_label = 0;
             parse_definition(ctx, start_token, stop_token, &status);
             break;
         case TOKEN_IDENTIFIER:
@@ -326,10 +326,10 @@ bool parse(struct pybuild_context *ctx, struct lexer_token *lex_tokens)
         }
     }
 
-    if (ctx->labelc != 0) {
+    /* if (ctx->labelc != 0) {
         ctx->labelc--;
         vscc_push2(ctx->current_function, O_DECLABEL, ctx->current_label++);
-    }
+    } */
 
     return status;
 }

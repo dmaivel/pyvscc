@@ -29,11 +29,13 @@ options:
 ### demo
 Currently, this compiler is able to compile and execute the following example effortlessly (tabs must be U+0009):
 ```python
-def play():
+def play(y):
+	if y == 3:
+		return 11
 	return 10
 
 def main():
-	x = play()
+	x = play(4)
 	if x != 11:
 		print('hello world!\n')
 	return x

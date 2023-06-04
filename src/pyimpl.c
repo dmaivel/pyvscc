@@ -1,5 +1,4 @@
 #include "pyimpl.h"
-#include "ir/intermediate.h"
 #include <string.h>
 
 static inline void add_pyimpl_stub(struct vscc_context *ctx)
