@@ -122,6 +122,15 @@ static void queue_memcpy(struct pybuild_context *ctx, char *name, void *data, si
     res->length = length;
 }
 
+static struct vscc_register *create_string(struct pybuild_context *ctx, struct lexer_token *token, struct vscc_register *dst)
+{
+    struct vscc_register *raw = vscc_alloc_global(&ctx->vscc_ctx, generate_name_for_local_global(ctx->current_function, NULL), strlen(token->contents) - 1, true);
+    struct vscc_register *ptr = dst != NULL ? dst : vscc_alloc(ctx->current_function, generate_name_for_local_global(ctx->current_function, NULL), sizeof(void*), false, true);
+    queue_memcpy(ctx, raw->symbol_name, &token->contents[1], strlen(token->contents) - 2);
+    vscc_push1(ctx->current_function, O_LEA, ptr, raw);
+    return ptr;
+}
+
 static void parse_call(struct pybuild_context *ctx, struct lexer_token *start_token, struct lexer_token *end_token, bool *status)
 {
     /*
@@ -157,11 +166,7 @@ static void parse_call(struct pybuild_context *ctx, struct lexer_token *start_to
             vscc_push2(ctx->current_function, O_PSHARG, atoi(token->contents));
             break;
         case TOKEN_STRING:;
-            struct vscc_register *raw = vscc_alloc_global(&ctx->vscc_ctx, generate_name_for_local_global(ctx->current_function, NULL), strlen(token->contents) - 2, true);
-            struct vscc_register *ptr = vscc_alloc(ctx->current_function, generate_name_for_local_global(ctx->current_function, NULL), sizeof(void*), false, true);
-            queue_memcpy(ctx, raw->symbol_name, &token->contents[1], strlen(token->contents) - 2);
-            vscc_push1(ctx->current_function, O_LEA, ptr, raw);
-            vscc_push3(ctx->current_function, O_PSHARG, ptr);
+            vscc_push3(ctx->current_function, O_PSHARG, create_string(ctx, token, NULL));
             break;
         default:
             fail_if(true, "err: expected parameter, got this instead: '%s'\n", token->contents);
@@ -180,6 +185,8 @@ static void parse_assignment(struct pybuild_context *ctx, struct lexer_token *st
     case TOKEN_EQUAL:
         if (next(next(start_token))->type == TOKEN_LITERAL)
             vscc_push0(ctx->current_function, O_STORE, dst, atoi(next(next(start_token))->contents));
+        else if (next(next(start_token))->type == TOKEN_STRING)
+            create_string(ctx, next(next(start_token)), dst);
         else if (next(next(start_token))->type == TOKEN_IDENTIFIER) {
             if (next(next(next(start_token)))->type == TOKEN_OPEN_PAREN) {
                 ctx->return_reg = dst;
