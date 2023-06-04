@@ -14,7 +14,7 @@ cmake --build . --config Release
 
 ## usage
 ```
-usage: pyvscc [-h] [-i FILE_PATH] [-e ENTRY_POINT] [-m SIZE] [-s SIZE] [-u]
+usage: pyvscc [-h] [-i FILE_PATH] [-e ENTRY_POINT] [-m SIZE] [-s SIZE] [-p] [-u]
 
 options:
     -h:                  display help information
@@ -22,6 +22,7 @@ options:
     -e [ENTRY_POINT]:    specify entry function (if not specified, searches for any function containing 'main')
     -m [SIZE]:           max amount of bytes program may allocate (default: 4098 bytes)
     -s [SIZE]:           amount of bytes variables/functions with an unspecified type take up (default: 8 bytes)
+    -p                   print performance information
     -u                   unsafe flag, ignores errors, executes first function if main not specified/found
 ```
 

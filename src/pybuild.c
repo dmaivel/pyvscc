@@ -137,7 +137,7 @@ static void parse_call(struct pybuild_context *ctx, struct lexer_token *start_to
     case PYIMPL_IMPLEMENTED_AND_SINGLE_DEFINITION:
         callee = pyimpl_get(&ctx->vscc_ctx, start_token->contents, PYIMPL_SINGLE_IMPL);
         break;
-    case PYIMPL_IMPLEMENTED_AND_MULTI_DEFINITION:;
+    case PYIMPL_IMPLEMENTED_AND_MULTI_DEFINITION:
         callee = pyimpl_get(&ctx->vscc_ctx, start_token->contents, token->type == TOKEN_LITERAL ? PYIMPL_FIRST_ARG_INT : PYIMPL_FIRST_ARG_STRING);
         break;
     }
