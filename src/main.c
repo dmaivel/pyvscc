@@ -1,11 +1,9 @@
 #include <string.h>
 #include <vscc.h>
-#include "asm/assembler.h"
-#include "ir/fmt.h"
-#include "ir/intermediate.h"
+
+#include "util.h"
 #include "lexer.h"
 #include "pyimpl.h"
-#include "util.h"
 #include "pybuild.h"
 
 #include <stdio.h>
@@ -106,7 +104,7 @@ int main(int argc, char **argv)
         .compiled_data = { 0 },
         .entry_name = program_args.entry,
 
-        .current_label = 100,
+        .current_label = 0,
         .labelc = 0,
 
         .current_function = NULL,

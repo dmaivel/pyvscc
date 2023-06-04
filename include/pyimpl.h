@@ -1,8 +1,6 @@
 #ifndef _PYIMPL_H_
 #define _PYIMPL_H_
 
-#include "ir/intermediate.h"
-#include "lexer.h"
 #include <vscc.h>
 
 enum pyimpl_implementation_status {
