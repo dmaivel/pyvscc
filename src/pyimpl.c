@@ -1,4 +1,5 @@
 #include "pyimpl.h"
+#include "ir/intermediate.h"
 #include <string.h>
 
 static inline void add_pyimpl_strlen(struct vscc_context *ctx)
@@ -58,8 +59,8 @@ struct vscc_function *pyimpl_get(struct vscc_context *ctx, char *fn, enum pyimpl
         enum pyimpl_implementation impl;
     } table[] = {
         { "print", "pyimpl_print_str", PYIMPL_FIRST_ARG_STRING },
-        { "print", "pyimpl_print_int", PYIMPL_FIRST_ARG_STRING },
-        { "strlen", "pyimpl_strlen", PYIMPL_SINGLE_IMPL },
+        { "print", "pyimpl_print_int", PYIMPL_FIRST_ARG_INT },
+        { "strlen", "pyimpl_strlen", PYIMPL_SINGLE_IMPL }
     };
 
     for (int i = 0; i < sizeof(table) / sizeof(*table); i++)
