@@ -4,7 +4,7 @@ project(vscc VERSION 0.1.0)
 include_directories(${vscc_SOURCE_DIR}/include)
 include_directories(${vscc_SOURCE_DIR}/vscc/include)
 
-file(GLOB VSCC_GLOB_SRC CONFIGURE_DEPENDS "vscc/src/util/*.c" "vscc/src/ir/*.c" "vscc/src/asm/*.c" "vscc/src/opt/*.c")
+file(GLOB VSCC_GLOB_SRC CONFIGURE_DEPENDS "vscc/src/util/*.c" "vscc/src/ir/*.c" "vscc/src/asm/*.c" "vscc/src/asm/codegen/*.c" "vscc/src/opt/*.c")
 
 add_library(vscc SHARED ${VSCC_GLOB_SRC})
 set_target_properties(vscc PROPERTIES PUBLIC_HEADER vscc/include/vscc.h)

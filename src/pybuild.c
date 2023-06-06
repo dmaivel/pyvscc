@@ -2,6 +2,8 @@
 #include "lexer.h"
 #include "pyimpl.h"
 
+#include <vscc.h>
+
 #include <util/list.h>
 #include <assert.h>
 #include <stdio.h>
@@ -352,7 +354,10 @@ static uintptr_t get_offset_from_symbol(struct vscc_symbol *symbols, char *symbo
 
 uintptr_t build(struct pybuild_context *ctx)
 {
-    vscc_codegen_x64(&ctx->vscc_ctx, &ctx->compiled_data, true);
+    struct vscc_codegen_interface interface = { 0 };
+    vscc_codegen_implement_x64(&interface, ABI_SYSV);
+
+    vscc_codegen(&ctx->vscc_ctx, &interface, &ctx->compiled_data, true);
 
     for (struct pybuild_memcpy *blk = ctx->memcpy_queue; blk; blk = blk->next) {
         uintptr_t offset = get_offset_from_symbol(ctx->compiled_data.symbols, blk->dst);
