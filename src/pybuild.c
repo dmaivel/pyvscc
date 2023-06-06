@@ -176,6 +176,9 @@ static void parse_call(struct pybuild_context *ctx, struct lexer_token *start_to
         token = token->next;
     }
 
+    if (ctx->return_reg)
+        ctx->return_reg->size = callee->return_size;
+
     _vscc_call(ctx->current_function, callee, ctx->return_reg ? ctx->return_reg : vscc_alloc(ctx->current_function, generate_name_for_local_global(ctx->current_function, NULL), ctx->default_size, false, true));
 }
 
