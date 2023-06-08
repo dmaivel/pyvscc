@@ -24,6 +24,8 @@ enum lexer_token_type {
     TOKEN_EQUAL,
     TOKEN_ADDEQ,
     TOKEN_SUBEQ,
+    TOKEN_MULEQ,
+    TOKEN_DIVEQ,
     TOKEN_RARROW,
     TOKEN_COMMENT,
 
