@@ -39,7 +39,7 @@ struct args {
     bool unsafe;
 };
 
-static void *map(struct vscc_compiled_data *compiled)
+static void *map(struct vscc_codegen_data *compiled)
 {
     void *exe = mmap(NULL, compiled->length, PROT_EXEC | PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
     memcpy(exe, compiled->buffer, compiled->length);
