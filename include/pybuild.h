@@ -14,7 +14,7 @@ struct pybuild_memcpy {
 
 struct pybuild_context {
     struct vscc_context vscc_ctx;
-    struct vscc_compiled_data compiled_data;
+    struct vscc_codegen_data compiled_data;
     char *entry_name;
 
     int current_label;
