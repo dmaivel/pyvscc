@@ -182,6 +182,17 @@ static void parse_call(struct pybuild_context *ctx, struct lexer_token *start_to
     _vscc_call(ctx->current_function, callee, ctx->return_reg ? ctx->return_reg : vscc_alloc(ctx->current_function, generate_name_for_local_global(ctx->current_function, NULL), ctx->default_size, false, true));
 }
 
+static enum vscc_opcode math_to_op(enum lexer_token_type type)
+{
+    switch (type) {
+    case TOKEN_ADDEQ: return O_ADD;
+    case TOKEN_SUBEQ: return O_SUB;
+    case TOKEN_MULEQ: return O_MUL;
+    case TOKEN_DIVEQ: return O_DIV;
+    default: return O_INVALID;
+    }
+}
+
 static void parse_assignment(struct pybuild_context *ctx, struct lexer_token *start_token, struct lexer_token *end_token, bool *status)
 {
     struct vscc_register *dst = get_variable(ctx, start_token->contents);
@@ -202,6 +213,25 @@ static void parse_assignment(struct pybuild_context *ctx, struct lexer_token *st
                 vscc_push1(ctx->current_function, O_STORE, dst, get_variable(ctx, start_token->contents));
         }
         break;
+    case TOKEN_ADDEQ:
+    case TOKEN_SUBEQ:
+    case TOKEN_MULEQ:
+    case TOKEN_DIVEQ:
+        if (next(next(start_token))->type == TOKEN_LITERAL)
+            vscc_push0(ctx->current_function, math_to_op(next(start_token)->type), dst, atoi(next(next(start_token))->contents));
+        else if (next(next(start_token))->type == TOKEN_STRING)
+            assert(false && "unsupported operation");
+        else if (next(next(start_token))->type == TOKEN_IDENTIFIER) {
+            if (next(next(next(start_token)))->type == TOKEN_OPEN_PAREN) {
+                ctx->return_reg = vscc_alloc(ctx->current_function, generate_name_for_local_global(ctx->current_function, NULL), ctx->default_size, false, true);
+                parse_call(ctx, next(next(start_token)), end_token, status);
+                vscc_push1(ctx->current_function, math_to_op(next(start_token)->type), dst, ctx->return_reg);
+                ctx->return_reg = NULL;
+            }
+            else
+                vscc_push1(ctx->current_function, math_to_op(next(start_token)->type), dst, get_variable(ctx, start_token->contents));
+        }
+        break;
     default:
         fail_if(true, "err: unexpected assignment\n");
     }
@@ -214,6 +244,10 @@ static void parse_identifier(struct pybuild_context *ctx, struct lexer_token *st
         parse_call(ctx, start_token, end_token, status);
         break;
     case TOKEN_EQUAL:
+    case TOKEN_ADDEQ:
+    case TOKEN_SUBEQ:
+    case TOKEN_MULEQ:
+    case TOKEN_DIVEQ:
         parse_assignment(ctx, start_token, end_token, status);
         break;
     default:

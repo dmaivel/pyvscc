@@ -1,4 +1,5 @@
 #include "lexer.h"
+#include <stdio.h>
 #include <vscc.h>
 
 #include <ctype.h>
@@ -86,6 +87,8 @@ struct lexer_token *str_to_tokens(const char *buffer)
         { .operator = "=",     .new_type = TOKEN_EQUAL },
         { .operator = "+=",    .new_type = TOKEN_ADDEQ },
         { .operator = "-=",    .new_type = TOKEN_SUBEQ },
+        { .operator = "*=",    .new_type = TOKEN_MULEQ },
+        { .operator = "/=",    .new_type = TOKEN_DIVEQ },
         { .operator = "->",    .new_type = TOKEN_RARROW },
 
         { .operator = "==",    .new_type = TOKEN_EQUALS },
@@ -156,7 +159,7 @@ struct lexer_token *str_to_tokens(const char *buffer)
                     }
                 }
             }
-
+            
             add_token(&root, &last, current_type, "");
             current_token_type = current_type;
             last->contents[0] = c;
