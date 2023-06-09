@@ -12,6 +12,14 @@ struct pybuild_memcpy {
     size_t length;
 };
 
+struct pybuild_branch {
+    struct pybuild_branch *next;
+
+    int type;
+    int start_label;
+    int end_label;
+};
+
 struct pybuild_context {
     struct vscc_context vscc_ctx;
     struct vscc_codegen_data compiled_data;
@@ -25,6 +33,7 @@ struct pybuild_context {
     size_t default_size;
 
     struct pybuild_memcpy *memcpy_queue;
+    struct pybuild_branch *branch_queue;
 };
 
 bool parse(struct pybuild_context *ctx, struct lexer_token *lex_tokens);

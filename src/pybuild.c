@@ -9,15 +9,47 @@
 #include <stdio.h>
 #include <string.h>
 
-#define fail_if(x, ...) \
+#define BRANCH_IF 1
+#define BRANCH_WHILE 2
+
+#define FAIL_IF(x, ...) \
     if (x) { \
         *status = false; \
         printf(__VA_ARGS__); \
         return; \
     }
 
-// static void parse_...(struct pybuild_context *ctx, struct lexer_token *start_token, struct lexer_token *end_token, bool *status)
-typedef void(*parser_impl_fnptr)(struct pybuild_context *ctx, struct lexer_token *start_token, struct lexer_token *end_token, bool *status);
+static bool equals(void *a, void *b)
+{
+    return a == b;
+}
+
+static struct pybuild_branch *branch_push(struct pybuild_branch **root, struct pybuild_branch b)
+{
+    struct pybuild_branch *br = vscc_list_alloc((void**)root, 0, sizeof(struct pybuild_branch));
+    br->type = b.type;
+    br->start_label = b.start_label;
+    br->end_label = b.end_label;
+    return br;
+}
+
+static struct pybuild_branch *branch_pop(struct pybuild_branch **root)
+{
+    struct pybuild_branch *res = calloc(1, sizeof(struct pybuild_branch));
+    struct pybuild_branch *br = *root;
+    for (; br->next; br = br->next);
+    memcpy(res, br, sizeof(struct pybuild_branch));
+    vscc_list_free_element((void**)root, 0, equals, br);
+    return res;
+}
+
+static int branch_count(struct pybuild_branch **root)
+{
+    int res = 0;
+    for (struct pybuild_branch *b = *root; b; b = b->next)
+        res++;
+    return res;
+}
 
 static struct lexer_token *next(struct lexer_token *c)
 {
@@ -83,10 +115,10 @@ static void parse_definition(struct pybuild_context *ctx, struct lexer_token *st
         ctx->current_function->return_size = parse_size(token->contents);
         break;
     default:
-        fail_if(true, "err: unexpected token at end of def, '%s'\n", token->contents);
+        FAIL_IF(true, "err: unexpected token at end of def, '%s'\n", token->contents);
     }
 
-    fail_if(next(token)->type != TOKEN_COLON, "err: expected ':' at end of function '%s'\n", ctx->current_function->symbol_name);
+    FAIL_IF(next(token)->type != TOKEN_COLON, "err: expected ':' at end of function '%s'\n", ctx->current_function->symbol_name);
 }
 
 static struct vscc_register *get_variable(struct pybuild_context *ctx, char *name)
@@ -153,7 +185,7 @@ static void parse_call(struct pybuild_context *ctx, struct lexer_token *start_to
         break;
     }
 
-    fail_if(callee == NULL, "err: could not find function '%s'\n", start_token->contents);
+    FAIL_IF(callee == NULL, "err: could not find function '%s'\n", start_token->contents);
     while (token != end_token && token && token->type != TOKEN_CLOSE_PAREN) {
         if (token->type == TOKEN_COMMA || token->type == TOKEN_WHITESPACE) {
             token = token->next;
@@ -171,7 +203,7 @@ static void parse_call(struct pybuild_context *ctx, struct lexer_token *start_to
             vscc_push3(ctx->current_function, O_PSHARG, create_string(ctx, token, NULL));
             break;
         default:
-            fail_if(true, "err: expected parameter, got this instead: '%s'\n", token->contents);
+            FAIL_IF(true, "err: expected parameter, got this instead: '%s'\n", token->contents);
         }
         token = token->next;
     }
@@ -233,7 +265,7 @@ static void parse_assignment(struct pybuild_context *ctx, struct lexer_token *st
         }
         break;
     default:
-        fail_if(true, "err: unexpected assignment\n");
+        FAIL_IF(true, "err: unexpected assignment\n");
     }
 }
 
@@ -251,7 +283,7 @@ static void parse_identifier(struct pybuild_context *ctx, struct lexer_token *st
         parse_assignment(ctx, start_token, end_token, status);
         break;
     default:
-        fail_if(true, "err: unexcepted identifier '%s'\n", start_token->contents);
+        FAIL_IF(true, "err: unexcepted identifier '%s'\n", start_token->contents);
     }
 }
 
@@ -268,7 +300,7 @@ static void parse_return(struct pybuild_context *ctx, struct lexer_token *start_
         vscc_push3(ctx->current_function, O_RET, get_variable(ctx, token->contents));
         break;
     default:
-        fail_if(true, "err: unexcepted identifier following return, '%s'\n", start_token->contents);
+        FAIL_IF(true, "err: unexcepted identifier following return, '%s'\n", start_token->contents);
     }
 }
 
@@ -279,6 +311,15 @@ static void parse_if(struct pybuild_context *ctx, struct lexer_token *start_toke
     struct lexer_token *src_token = next(operation_token);
 
     struct vscc_register *dest = get_variable(ctx, dst_token->contents);
+
+    struct pybuild_branch *branch = branch_push(&ctx->branch_queue, (struct pybuild_branch){
+        .type = start_token->type == TOKEN_IF ? BRANCH_IF : BRANCH_WHILE,
+        .start_label = ctx->current_label++,
+        .end_label = ctx->current_label++,
+    });
+
+    if (start_token->type == TOKEN_WHILE)
+        vscc_push2(ctx->current_function, O_DECLABEL, branch->start_label);
 
     switch (src_token->type) {
     case TOKEN_LITERAL:
@@ -291,10 +332,10 @@ static void parse_if(struct pybuild_context *ctx, struct lexer_token *start_toke
 
     switch (operation_token->type) {
     case TOKEN_EQUALS:
-        vscc_push2(ctx->current_function, O_JNE, ctx->current_label);
+        vscc_push2(ctx->current_function, O_JNE, branch->end_label);
         break;
     case TOKEN_NEQUALS:
-        vscc_push2(ctx->current_function, O_JE, ctx->current_label);
+        vscc_push2(ctx->current_function, O_JE, branch->end_label);
         break;
     default:
         /* to-do: fail? */
@@ -344,8 +385,12 @@ bool parse(struct pybuild_context *ctx, struct lexer_token *lex_tokens)
          * figure out tab information
          */
         if (ctx->labelc + 1 != tabs_found && def) {
+            struct pybuild_branch *branch = branch_pop(&ctx->branch_queue);
+            if (branch->type == BRANCH_WHILE)
+                vscc_push2(ctx->current_function, O_JMP, branch->start_label);
+            vscc_push2(ctx->current_function, O_DECLABEL, branch->end_label);
             ctx->labelc--;
-            vscc_push2(ctx->current_function, O_DECLABEL, ctx->current_label++);
+            free(branch);
         }
 
         /*
@@ -363,6 +408,7 @@ bool parse(struct pybuild_context *ctx, struct lexer_token *lex_tokens)
         case TOKEN_RETURN:
             parse_return(ctx, start_token, stop_token, &status);
             break;
+        case TOKEN_WHILE:
         case TOKEN_IF:
             parse_if(ctx, start_token, stop_token, &status);
             break;
