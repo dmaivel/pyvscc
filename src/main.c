@@ -195,12 +195,6 @@ int main(int argc, char **argv)
      */
     void *mapped = map(&ctx.compiled_data);
     entry_point_fnptr entry = mapped + entry_offset;
-    
-for (int i = 0; i < ctx.compiled_data.length; i++) {
-        printf("%02hhx ", ctx.compiled_data.buffer[i]);
-    }
-    puts("\n");
-    fflush(stdout);
 
     start_time = time_us();
     entry();
