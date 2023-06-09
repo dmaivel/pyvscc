@@ -1,5 +1,7 @@
 #include <vscc.h>
 
+#include "ir/intermediate.h"
+#include "opt/opt.h"
 #include "util.h"
 #include "lexer.h"
 #include "pyimpl.h"
@@ -19,14 +21,15 @@
 typedef uint64_t(*entry_point_fnptr)();
 
 static const char *usage = 
-    "usage: pyvscc [-h] [-i FILE_PATH] [-e ENTRY_POINT] [-m SIZE] [-s SIZE] [-p] [-u]\n"
+    "usage: pyvscc [-h] [-i FILE_PATH] [-e ENTRY_POINT] [-m SIZE] [-s SIZE] [-o] [-p] [-u]\n"
     "\n"
     "options:\n"
-    "  -h:                  display help information\n"
-    "  -i [FILE_PATH]:      input file path\n"
-    "  -e [ENTRY_POINT]:    specify entry function (if not specified, searches for any function containing 'main')\n"
-    "  -m [SIZE]:           max amount of bytes program may allocate (default: 4098 bytes)\n"
-    "  -s [SIZE]:           amount of bytes variables/functions with an unspecified type take up (default: 8 bytes)\n"
+    "  -h                   display help information\n"
+    "  -i [FILE_PATH]       input file path\n"
+    "  -e [ENTRY_POINT]     specify entry function (if not specified, searches for any function containing 'main')\n"
+    "  -m [SIZE]            max amount of bytes program may allocate (default: 4098 bytes)\n"
+    "  -s [SIZE]            amount of bytes variables/functions with an unspecified type take up (default: 8 bytes)\n"
+    "  -o                   enable optimizations\n"
     "  -p                   print performance information\n"
     "  -u                   unsafe flag, ignores errors, executes first function if main not specified/found\n";
 
@@ -35,6 +38,7 @@ struct args {
     char *entry;
     size_t default_size;
     size_t max_mem;
+    bool optimize;
     bool perf;
     bool unsafe;
 };
@@ -72,6 +76,7 @@ int main(int argc, char **argv)
         .entry = "main",
         .default_size = sizeof(uint64_t),
         .max_mem = 4096,
+        .optimize = false,
         .perf = false,
         .unsafe = false
     };
@@ -97,6 +102,9 @@ int main(int argc, char **argv)
             case 's':
                 program_args.default_size = atoi(argv[i + 1]);
                 i++;
+                break;
+            case 'o':
+                program_args.optimize = true;
                 break;
             case 'p':
                 program_args.perf = true;
@@ -163,6 +171,14 @@ int main(int argc, char **argv)
     }
 
     /*
+     * perform optimizations
+     */
+    if (program_args.optimize) {
+        for (struct vscc_function *fn = ctx.vscc_ctx.function_stream; fn; fn = fn->next)
+            vscc_optfn_elim_dead_store(fn);
+    }
+
+    /*
      * perf numbers
      */
     if (program_args.perf)
@@ -196,10 +212,16 @@ int main(int argc, char **argv)
     void *mapped = map(&ctx.compiled_data);
     entry_point_fnptr entry = mapped + entry_offset;
 
+    /*
+     * execution
+     */
     start_time = time_us();
     entry();
     end_time = time_us();
 
+    /*
+     * perf numbers
+     */
     if (program_args.perf)
         printf("pyvscc: executed for %ld us\n", end_time - start_time);
 
