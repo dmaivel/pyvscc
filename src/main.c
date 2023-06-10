@@ -30,8 +30,7 @@ static const char *usage =
     "  -m [SIZE]            max amount of bytes program may allocate (default: 4098 bytes)\n"
     "  -s [SIZE]            amount of bytes variables/functions with an unspecified type take up (default: 8 bytes)\n"
     "  -o                   enable optimizations\n"
-    "  -p                   print performance information\n"
-    "  -u                   unsafe flag, ignores errors, executes first function if main not specified/found\n";
+    "  -p                   print performance information\n";
 
 struct args {
     char *filepath;
@@ -40,7 +39,6 @@ struct args {
     size_t max_mem;
     bool optimize;
     bool perf;
-    bool unsafe;
 };
 
 static void *map(struct vscc_codegen_data *compiled)
@@ -77,8 +75,7 @@ int main(int argc, char **argv)
         .default_size = sizeof(uint64_t),
         .max_mem = 4096,
         .optimize = false,
-        .perf = false,
-        .unsafe = false
+        .perf = false
     };
 
     for (int i = 1; i < argc; i++) {
@@ -108,9 +105,6 @@ int main(int argc, char **argv)
                 break;
             case 'p':
                 program_args.perf = true;
-                break;
-            case 'u':
-                program_args.unsafe = true;
                 break;
             default:
                 printf("wrn: unknown argument '%s'\n", argv[i]);
@@ -165,7 +159,7 @@ int main(int argc, char **argv)
     start_time = time_us();
     bool status = parse(&ctx, tokens);
     end_time = time_us();
-    if (!status && !program_args.unsafe) {
+    if (!status) {
         printf("err: failed to compile\n");
         return 0;
     }
@@ -191,13 +185,8 @@ int main(int argc, char **argv)
     uintptr_t entry_offset = build(&ctx);
     end_time = time_us();
     if (entry_offset == -1) {
-        if (!program_args.unsafe) {
-            printf("err: entry point not found\n");
-            return 0;
-        } 
-        else {
-            entry_offset = 0;
-        }
+        printf("err: entry point not found\n");
+        return 0;
     }
 
     /*

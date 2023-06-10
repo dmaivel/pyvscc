@@ -14,7 +14,7 @@ cmake --build . --config Release
 
 ## usage
 ```
-usage: pyvscc [-h] [-i FILE_PATH] [-e ENTRY_POINT] [-m SIZE] [-s SIZE] [-o] [-p] [-u]
+usage: pyvscc [-h] [-i FILE_PATH] [-e ENTRY_POINT] [-m SIZE] [-s SIZE] [-o] [-p]
 
 options:
     -h                   display help information
@@ -24,7 +24,6 @@ options:
     -s [SIZE]            amount of bytes variables/functions with an unspecified type take up (default: 8 bytes)
     -o                   enable optimizations
     -p                   print performance information
-    -u                   unsafe flag, ignores errors, executes first function if main not specified/found
 ```
 
 ## features
