@@ -27,7 +27,7 @@ static const char *usage =
     "  -h                   display help information\n"
     "  -i [FILE_PATH]       input file path\n"
     "  -e [ENTRY_POINT]     specify entry function (if not specified, searches for any function containing 'main')\n"
-    "  -m [SIZE]            max amount of bytes program may allocate (default: 4098 bytes)\n"
+    "  -m [SIZE]            max amount of bytes program may allocate (default: 4096 bytes)\n"
     "  -s [SIZE]            amount of bytes variables/functions with an unspecified type take up (default: 8 bytes)\n"
     "  -o                   enable optimizations\n"
     "  -p                   print performance information\n";
