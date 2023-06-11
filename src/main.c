@@ -139,7 +139,8 @@ int main(int argc, char **argv)
         .return_reg = NULL,
         .default_size = program_args.default_size,
 
-        .memcpy_queue = NULL
+        .memcpy_queue = NULL,
+        .branch_queue = NULL
     };
 
     /*
