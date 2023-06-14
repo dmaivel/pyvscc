@@ -42,7 +42,7 @@ def main():
 	return x
 ```
 <details>
-<summary>Disassembly of compiled output</summary>
+<summary>Click to reveal: disassembly of compiled output</summary>
 	
 ```assembly
 ; pyimpl_strlen(i64)
