@@ -93,6 +93,8 @@ struct lexer_token *str_to_tokens(const char *buffer)
 
         { .operator = "==",    .new_type = TOKEN_EQUALS },
         { .operator = "!=",    .new_type = TOKEN_NEQUALS },
+        { .operator = "<",     .new_type = TOKEN_LESSTHAN },
+        { .operator = ">",     .new_type = TOKEN_GREATERTHAN },
     };
 
     enum lexer_token_type current_token_type = get_token_type_c(*buffer);

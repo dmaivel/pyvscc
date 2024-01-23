@@ -1,4 +1,6 @@
-# pyvscc ![license](https://img.shields.io/badge/license-MIT-blue)  <img style="float: right;" src="https://cdn-icons-png.flaticon.com/512/427/427533.png" alt=snake width="48" height="48">
+<img align="right" width="18%" src="https://cdn-icons-png.flaticon.com/512/427/427533.png">
+
+# pyvscc ![license](https://img.shields.io/badge/license-MIT-blue)
 
 Experimental, no dependencies, python compiler for the x86-64 architecture on linux, utilizing [vscc](https://www.github.com/dmaivel/vscc) for bytecode generation. This project is largely unfinished and is primarly a proof of concept.
 
