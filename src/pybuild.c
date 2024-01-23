@@ -304,7 +304,7 @@ static void parse_return(struct pybuild_context *ctx, struct lexer_token *start_
     }
 }
 
-static void parse_if(struct pybuild_context *ctx, struct lexer_token *start_token, struct lexer_token *end_token, bool *status)
+static void parse_conditional(struct pybuild_context *ctx, struct lexer_token *start_token, struct lexer_token *end_token, bool *status)
 {
     struct lexer_token *dst_token = next(start_token);
     struct lexer_token *operation_token = next(dst_token);
@@ -336,6 +336,12 @@ static void parse_if(struct pybuild_context *ctx, struct lexer_token *start_toke
         break;
     case TOKEN_NEQUALS:
         vscc_push2(ctx->current_function, O_JE, branch->end_label);
+        break;
+    case TOKEN_GREATERTHAN:
+        vscc_push2(ctx->current_function, O_JG, branch->end_label);
+        break;
+    case TOKEN_LESSTHAN:
+        vscc_push2(ctx->current_function, O_JL, branch->end_label);
         break;
     default:
         /* to-do: fail? */
@@ -410,7 +416,7 @@ bool parse(struct pybuild_context *ctx, struct lexer_token *lex_tokens)
             break;
         case TOKEN_WHILE:
         case TOKEN_IF:
-            parse_if(ctx, start_token, stop_token, &status);
+            parse_conditional(ctx, start_token, stop_token, &status);
             break;
         default:
             /* to-do: fail? */
